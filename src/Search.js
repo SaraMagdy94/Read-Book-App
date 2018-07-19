@@ -8,34 +8,37 @@ class Search extends React.Component {
         query: '',
         books: []
     }
-      updateQuery = (query) => {
-        this.setState({ query: query.trim() })
-        if(query)
-       {
-          BooksAPI.search(query, 30).then((books) =>
-          {
-              if(books.length > 0)
-              {
-                  this.setState({ books: books })
-              }
-              else
-              {
-                  this.setState({ books: [] })
-              }
-          })
+    sendShelfChange(book,shelf){
+        this.props.sendShelfChange(book,shelf)
+    }
+    fetchBooks(query){
+     if(!!query){
+         BooksAPI.search(query).then(data =>{
+             if(!!data.error){
+                 this.setState({
+                     books:[]
+                 });
+             }else{
+                 let checkShelfs = data.map(book=> {
+                     for (var i = 0; i < this.props.shelfBooks.length; i++) {
+                         if (this.props.shelfBooks[i].id === book.id){
+                             book.shelf=this.props.shelfBooks[i].shelf;
+                         }
+                         
+                     }
+                     return book;
+                 })
+                 this.setState({
+                     books:checkShelfs
+                 })
+             }
+             
+         })
 
-          // if query is empty => reset state to default
-      }
-      else
-      {
-          this.setState({books: [] })
-          this.setState({ query: '' })
-      }
-      }
-      
+    }
+    }
       render() {
-        const { query,books } = this.state;
-        const { changeShelf } = this.props
+        const { books } = this.state;
       
         return (
             <div className="search-books">
@@ -46,25 +49,22 @@ class Search extends React.Component {
                         <input
                             type="text"
                             placeholder="Search by title or author"
-                            value={ query }
-                            onChange={ (event) => this.updateQuery(event.target.value) }
+                            onChange={(event) => this.fetchBooks(event.target.value) }
                             />
                     </div>
                 </div>
                 <div className="search-books-results">
                     <ol className="books-grid">
                       {
-                        books.map((book) => (
-                            <li key={ book.id }>
-                                <Book
-                                    id={ book.id }
-                                    shelf={ book.shelf }
-                                    authors={ book.authors }
-                                    title={ book.title }
-                                    imageLinks={ book.imageLinks }
-                                    changeShelf={ changeShelf }
-                                />
-                            </li>
+                        books.length !== 0 &&
+                           books.map((book,index) => (
+                                    <Book
+                                        key={index}
+                                        book={book}
+                                    sendShelfChange={(book, shelf) => { this.sendShelfChange(book, shelf) }}
+                                      
+                                       
+                                    />
                         ))
                       }
                     </ol>
