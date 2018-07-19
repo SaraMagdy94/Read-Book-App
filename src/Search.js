@@ -11,8 +11,10 @@ class Search extends React.Component {
     sendShelfChange(book,shelf){
         this.props.sendShelfChange(book,shelf)
     }
+
     fetchBooks(query){
      if(!!query){
+
          BooksAPI.search(query).then(data =>{
              if(!!data.error){
                  this.setState({
@@ -35,7 +37,10 @@ class Search extends React.Component {
              
          })
 
-    }
+     } else { // if empty query, clear the displayed books
+         this.setState({ books: [] })
+     }
+     
     }
       render() {
         const { books } = this.state;
